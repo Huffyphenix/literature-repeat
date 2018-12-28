@@ -8,12 +8,11 @@ tcga_path <- "/data/shiny-data/GSCALite/TCGA/snv"
 
 # load data ---------------------------------------------------------------
 
-snv <- readr::read_rds(file.path(tcga_path, "pancan33_snv.rds.gz"))
+snv <- readr::read_rds(file.path(tcga_path, "pancan33_snv_from_syn7824274_spread.rds.gz"))
 
 
 # analysis ----------------------------------------------------------------
-cancers_26 <- c("SKCM","LUSC","LUAD","BLCA","COAD","STAD","UCEC","HNSC","READ","ACC","LIHC","CHOL","UCS","PAAD",
-                "BRCA","KIRC","KICH","KIRP","UVM","TGCT","PRAD","LGG","GBM","OV","PCPG","THCA")
+cancers_except <- c("COADREAD","GBMLGG","KIPAN","STES","CESC")
 
 fn_sample_mutation <- function(.x){
   .x %>%
@@ -33,7 +32,7 @@ fn_high_mutate_per <- function(.x){
 
 
 snv %>%
-  dplyr::filter(cancer_types %in% cancers_26) %>%
+  dplyr::filter(! Cancer_Types %in% cancers_except) %>%
   dplyr::mutate(snv_count = purrr::map(snv,fn_sample_mutation)) %>%
   dplyr::select(-snv) -> cancer_26_count
 
@@ -70,5 +69,5 @@ cancer_26_count %>%
 
 out_path <- "/project/huff/huff/data/TCGA"
 cancer_26_mutation_burden_classification %>% 
-  tidyr::nest(-cancer_types) %>%
+  tidyr::nest(-Cancer_Types) %>%
   readr::write_rds(file.path(out_path,"classfication_of_26_cancers_by_mutation_burden192.rds.gz"),compress = "gz")
